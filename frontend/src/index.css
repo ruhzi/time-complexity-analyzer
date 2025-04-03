@@ -1,35 +1,182 @@
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin: 20px;
+/* index.css */
+
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Global Color Variables */
+:root {
+  --primary-color: #3B82F6;
+  --primary-hover: #2563EB;
+  --accent-color: #F59E0B;
+  --background-color: #0F172A;
+  --container-bg: rgba(255, 255, 255, 0.1);
+  --text-color: #F3F4F6;
+  --border-color: #4B5563;
+  --shadow-light: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  --glass-effect: rgba(255, 255, 255, 0.2);
 }
 
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Page Container */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  background: var(--container-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow-light);
+  backdrop-filter: blur(10px);
+}
+
+/* Headings */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 24px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Textarea Styling */
 textarea {
   width: 80%;
   height: 200px;
   font-size: 16px;
-  margin-bottom: 10px;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--glass-effect);
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease-in-out;
+  color: var(--text-color);
+  margin-bottom: 20px;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 18px;
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Dropdown (Select) Styling */
+select {
+  width: 80%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background: #1E293B;
+  color: white;
   cursor: pointer;
-  background-color: #007bff;
+  transition: all 0.3s ease-in-out;
+  box-shadow: var(--shadow-light);
+  backdrop-filter: blur(10px);
+  margin-bottom: 20px;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+select:hover {
+  transform: translateY(-2px);
+}
+
+/* Dropdown List Options */
+select option {
+  background: #111827;
+  color: white;
+  padding: 10px;
+}
+
+/* Hover effect for options */
+select option:hover {
+  background: var(--primary-color);
+}
+
+/* Buttons */
+button {
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease-in-out;
+  margin-bottom: 20px;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background: var(--primary-hover);
+  transform: translateY(-2px);
 }
 
-h1 {
-  color: #333;
+/* Accent Button */
+.button-accent {
+  background: var(--accent-color);
 }
 
+.button-accent:hover {
+  background: #d97706;
+}
+
+/* Sections for contrast */
+.section {
+  width: 100%;
+  padding: 40px 0;
+}
+
+.section-dark {
+  background: var(--text-color);
+  color: white;
+}
+
+.section-light {
+  background: var(--background-color);
+}
+
+/* Canvas Styling */
 canvas {
   margin-top: 20px;
-  border: 1px solid #ddd;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-light);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  textarea {
+    width: 100%;
+  }
+
+  select {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
 }
