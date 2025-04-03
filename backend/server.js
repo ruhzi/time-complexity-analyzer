@@ -1,8 +1,9 @@
+// server.js (updated analyzePython function included)
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const esprima = require("esprima");
-const { spawn } = require("child_process"); // Use spawn for better control
+const { spawn } = require("child_process");
 
 const app = express();
 const PORT = 5000;
@@ -10,41 +11,58 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-/**
- * Function to estimate time complexity for JavaScript using AST
- */
 function analyzeJavaScript(code) {
     try {
         const ast = esprima.parseScript(code, { tolerant: true });
-        let loops = 0;
+        let loopDepth = 0;
+        let currentDepth = 0;
 
         function traverse(node) {
             if (!node || typeof node !== "object") return;
-            if (node.type === "ForStatement" || node.type === "WhileStatement") loops++;
-            for (const key in node) traverse(node[key]);
+
+            if (node.type === "ForStatement" || node.type === "WhileStatement") {
+                currentDepth++;
+                loopDepth = Math.max(loopDepth, currentDepth);
+                traverse(node.body);
+                currentDepth--;
+                return;
+            }
+
+            for (const key in node) {
+                traverse(node[key]);
+            }
         }
 
         traverse(ast);
 
-        if (loops === 0) return "O(1)";
-        if (loops === 1) return "O(n)";
-        if (loops >= 2) return "O(n^2)";
+        let complexity = "O(1)";
+        let reason = "No loops or recursion found.";
 
-        return "Unknown Complexity";
+        if (loopDepth === 1) {
+            complexity = "O(n)";
+            reason = "1 loop level detected.";
+        } else if (loopDepth === 2) {
+            complexity = "O(n^2)";
+            reason = "2 nested loops detected.";
+        } else if (loopDepth === 3) {
+            complexity = "O(n^3)";
+            reason = "3 nested loops detected.";
+        } else if (loopDepth > 3) {
+            complexity = `O(n^${loopDepth})`;
+            reason = `${loopDepth} nested loops detected.`;
+        }
+
+        return { complexity, reason };
     } catch (error) {
         console.error("Error analyzing JS code:", error);
-        return "Error in Analysis";
+        return { complexity: "Error", reason: "JS parsing failed." };
     }
 }
 
-/**
- * Function to analyze Python code (without Docker)
- */
 function analyzePython(code) {
     return new Promise((resolve, reject) => {
         const process = spawn("python", ["analyze_python.py"], { cwd: __dirname });
 
-        // Send code to Python script via stdin
         process.stdin.write(code);
         process.stdin.end();
 
@@ -59,23 +77,29 @@ function analyzePython(code) {
             errorOutput += data.toString();
         });
 
-        process.on("close", (code) => {
-            if (code !== 0) {
-                reject(`Python process exited with code ${code}: ${errorOutput}`);
+        process.on("close", (exitCode) => {
+            if (exitCode !== 0) {
+                reject(`Python process exited with code ${exitCode}: ${errorOutput}`);
             } else {
                 try {
+                    console.log("📦 Raw Python output:", output.trim());
+
                     const parsedOutput = JSON.parse(output.trim());
-                    resolve(parsedOutput.complexity || "Error analyzing code.");
+                    resolve({
+                        complexity: parsedOutput.complexity,
+                        reason: parsedOutput.reason || "No reason provided by Python script."
+                    });
                 } catch (error) {
-                    resolve("Error parsing Python output.");
+                    resolve({
+                        complexity: "Error",
+                        reason: "Invalid JSON returned by Python script."
+                    });
                 }
-                
             }
         });
     });
 }
 
-// Analyze Code Complexity Route
 app.post("/analyze", async (req, res) => {
     const { code, language } = req.body;
 
@@ -83,24 +107,23 @@ app.post("/analyze", async (req, res) => {
         return res.status(400).json({ error: "Code and language are required" });
     }
 
-    let complexity = "Unknown";
+    let analysisResult;
 
     if (language === "javascript") {
-        complexity = analyzeJavaScript(code);
+        analysisResult = analyzeJavaScript(code);
     } else if (language === "python") {
         try {
-            complexity = await analyzePython(code);
+            analysisResult = await analyzePython(code);
         } catch (error) {
-            return res.status(500).json({ error });
+            return res.status(500).json({ error: error.toString() });
         }
     } else {
         return res.status(400).json({ error: "Unsupported language" });
     }
 
-    res.json({ complexity });
+    res.json(analysisResult);
 });
 
-// Start Server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
